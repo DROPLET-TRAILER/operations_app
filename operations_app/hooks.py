@@ -47,6 +47,12 @@ app_license = "MIT"
 #	"Role": "home_page"
 # }
 
+website_route_rules = [
+    {"from_route": "/employee-job-matching", "to_route": "operations_app/employee_job_matching"},
+]
+
+
+
 # Generators
 # ----------
 
