@@ -1,0 +1,15 @@
+{
+    "doctype": "Page",
+    "name": "Employee Job Matching",
+    "title": "Employee Job Matching",
+    "route": "employee-job-matching",
+    "main_section": "Operations App",
+    "icon": "octicon octicon-file-directory",
+    "roles": [
+      {
+        "role": "System Manager"
+      }
+    ],
+    "standard": 1
+  }
+  
