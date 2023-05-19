@@ -1,0 +1,89 @@
+{% extends "templates/web.html" %}
+
+{%- block title -%}{{_("Matching Employees to Jobs")}}{%- endblock -%}
+
+{% block page_content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .matching-table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    thead {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    tr:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+
+<div class="matching-table-container">
+    <table id="matching-table">
+        <thead>
+            <tr>
+                <th>Job Title</th>
+                <th>Employee Name</th>
+                <th>Matching Skills</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            <!-- The table rows will be populated using JavaScript -->
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://kit.fontawesome.com/cd6afecc1d.js" crossorigin="anonymous"></script>
+
+<script>
+    // Dummy data - Replace this with actual data fetching and processing logic
+    const data = [
+        { job_title: "Software Engineer", employee_name: "John Doe", matching_skills: "Python, JavaScript, HTML" },
+        { job_title: "Project Manager", employee_name: "Jane Smith", matching_skills: "Leadership, Agile, Scrum" },
+    ];
+
+    const tableBody = document.getElementById("table-body");
+
+    // Populate the table with data
+    data.forEach(item => {
+        const row = document.createElement("tr");
+
+        const jobTitleCell = document.createElement("td");
+        jobTitleCell.textContent = item.job_title;
+        row.appendChild(jobTitleCell);
+
+        const employeeNameCell = document.createElement("td");
+        employeeNameCell.textContent = item.employee_name;
+        row.appendChild(employeeNameCell);
+
+        const matchingSkillsCell = document.createElement("td");
+        matchingSkillsCell.textContent = item.matching_skills;
+        row.appendChild(matchingSkillsCell);
+
+        tableBody.appendChild(row);
+    });
+</script>
+{% endblock %}
