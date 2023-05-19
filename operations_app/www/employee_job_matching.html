@@ -43,6 +43,8 @@
     }
 
     th{
+        background-color: lightblue;
+        color: black;
         
     }
 </style>
@@ -50,66 +52,120 @@
 <div class="matching-table-container">
     <table id="matching-table">
         <thead>
-            <tr>
-                <th>Job Title</th>
-                <th>Employee Name</th>
-                <th>Matching Skills</th>
+            <tr id="table-header">
             </tr>
         </thead>
         <tbody id="table-body">
-            <!-- The table rows will be populated using JavaScript -->
         </tbody>
     </table>
-   
 </div>
+
+<div>
+    <label for="employee-filter">Filter by employee name:</label>
+    <input type="text" id="employee-filter">
+    <button id="filter-button">Filter</button>
+</div>
+
 <div><a href="/app/droplet-dashboard" id="returnButton" class='btn btn-primary btn-sm return'>Return to Dashboard</a></div>
 {% endblock %}
 
 {% block script %}
 <script src="https://kit.fontawesome.com/cd6afecc1d.js" crossorigin="anonymous"></script>
-
 <script>
-    const tableBody = document.getElementById("table-body");
+let allEmployees;
+let allWorkstationEmployeePairs;
 
+fetch('/api/resource/Employee')
+.then(response => response.json())
+.then(data => {
+    let employeeIdentifiers = data.data;
+    return Promise.all(employeeIdentifiers.map(employeeIdentifier => {
+        return fetch(`/api/resource/Employee/${employeeIdentifier.name}`)
+        .then(response => response.json())
+        .then(employeeData => {
+            return employeeData.data;
+        });
+    }));
+})
+.then(employees => {
+    // Sort employees by index
+    employees.sort((a, b) => a.idx - b.idx);
+    allEmployees = employees;
 
-    fetch('/api/resource/Employee')
+    return fetch('/api/resource/Workstation')
     .then(response => response.json())
-    .then(data => {
-        let employeeIdentifiers = data.data;
-        return Promise.all(employeeIdentifiers.map(employeeIdentifier => {
-            return fetch(`/api/resource/Employee/${employeeIdentifier.name}`)
+    .then(workstationData => {
+        let workstationIdentifiers = workstationData.data;
+        return Promise.all(workstationIdentifiers.map(workstationIdentifier => {
+            return fetch(`/api/resource/Workstation/${workstationIdentifier.name}`)
             .then(response => response.json())
-            .then(employeeData => {
-                return employeeData.data;
+            .then(workstationData => {
+                return {workstation: workstationData.data, employees: employees};
             });
         }));
-    })
-    .then(employees => {
-        employees.forEach(employee => {
-            // Create a new row for each employee
-            const row = document.createElement("tr");
+    });
+})
+.then(workstationEmployeePairs => {
+    allWorkstationEmployeePairs = workstationEmployeePairs;
+    populateTable(workstationEmployeePairs);
+})
+.catch(err => console.log(err));
 
-            // Create a cell for the job title (placeholder)
-            const jobTitleCell = document.createElement("td");
-            jobTitleCell.textContent = "Job Title Placeholder"; // Replace this with actual job title data
-            row.appendChild(jobTitleCell);
+function populateTable(workstationEmployeePairs) {
+    const tableBody = document.getElementById('table-body');
+    const tableHeader = document.getElementById('table-header');
 
-            // Create a cell for the employee name
-            const employeeNameCell = document.createElement("td");
-            // If employee_name is not working, try first_name and last_name
-            employeeNameCell.textContent = employee.first_name + ' ' + employee.last_name;
-            row.appendChild(employeeNameCell);
+    // Clear existing table data
+    tableBody.innerHTML = '';
+    tableHeader.innerHTML = '';
 
-            // Create a cell for the matching skills (placeholder)
-            const matchingSkillsCell = document.createElement("td");
-            matchingSkillsCell.textContent = "Matching Skills Placeholder"; // Replace this with actual matching skills data
-            row.appendChild(matchingSkillsCell);
+    // Build table header
+    const workstationHeaderCell = document.createElement('th');
+    workstationHeaderCell.textContent = 'Workstation';
+    tableHeader.appendChild(workstationHeaderCell);
 
-            // Add the row to the table body
-            tableBody.appendChild(row);
+    // Assuming all workstations have the same employees
+    workstationEmployeePairs[0].employees.forEach(employee => {
+        const employeeHeaderCell = document.createElement('th');
+        employeeHeaderCell.textContent = employee.first_name + ' ' + employee.last_name;
+        tableHeader.appendChild(employeeHeaderCell);
+    });
+
+    // Build table body
+    workstationEmployeePairs.forEach(pair => {
+        const row = document.createElement('tr');
+
+        // Workstation cell
+        const workstationCell = document.createElement('td');
+        workstationCell.textContent = pair.workstation.name;
+        row.appendChild(workstationCell);
+
+        // Employee cells
+        pair.employees.forEach(employee => {
+            const expertiseCell = document.createElement('td');
+            const expertise = employee.skill_expertise.find(item => item.workstation === pair.workstation.name)?.skill_expertise || 0;
+            expertiseCell.textContent = expertise;
+            row.appendChild(expertiseCell);
         });
-    })
-    .catch(err => console.log(err));
+
+        // Add the row to the table body
+        tableBody.appendChild(row);
+    });
+}
+
+document.getElementById('filter-button').addEventListener('click', function() {
+    const filterValue = document.getElementById('employee-filter').value;
+    const filteredPairs = allWorkstationEmployeePairs.map(pair => {
+        return {
+            workstation: pair.workstation,
+            employees: pair.employees.filter(employee => {
+                return employee.first_name.includes(filterValue) || employee.last_name.includes(filterValue);
+            })
+        };
+    });
+    populateTable(filteredPairs);
+});
 </script>
 {% endblock %}
+
 
