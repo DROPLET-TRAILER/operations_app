@@ -137,7 +137,7 @@ function populateTable(workstationEmployeePairs) {
 
         // Workstation cell
         const workstationCell = document.createElement('td');
-        workstationCell.textContent = pair.workstation.name;
+        workstationCell.innerHTML = pair.workstation.name + '&nbsp;&nbsp;------&nbsp;&nbsp;' + pair.workstation.description;
         row.appendChild(workstationCell);
 
         // Employee cells
@@ -154,12 +154,12 @@ function populateTable(workstationEmployeePairs) {
 }
 
 document.getElementById('filter-button').addEventListener('click', function() {
-    const filterValue = document.getElementById('employee-filter').value;
+    const filterValue = document.getElementById('employee-filter').value.toLowerCase().trim();
     const filteredPairs = allWorkstationEmployeePairs.map(pair => {
         return {
             workstation: pair.workstation,
             employees: pair.employees.filter(employee => {
-                return employee.first_name.includes(filterValue) || employee.last_name.includes(filterValue);
+                return employee.first_name.toLowerCase().includes(filterValue) || employee.last_name.toLowerCase().includes(filterValue);
             })
         };
     });
